@@ -5172,10 +5172,20 @@ codegen_visit_expr(compiler *c, expr_ty e)
     case BoolOp_kind:
         return codegen_boolop(c, e);
     case BinOp_kind:
+    if (e->v.BinOp.op == Pipe) {
+        // Generate function call: right(left)
+        VISIT(c, expr, e->v.BinOp.right);  // Load function
+        ADDOP(c, loc, PUSH_NULL);          // Push NULL for calling convention
+        VISIT(c, expr, e->v.BinOp.left);   // Load argument
+        ADDOP_I(c, loc, CALL, 1);          // Call with 1 argument
+        break;
+    } else {
+        // Normal binary operation
         VISIT(c, expr, e->v.BinOp.left);
         VISIT(c, expr, e->v.BinOp.right);
         ADDOP_BINARY(c, loc, e->v.BinOp.op);
         break;
+    }
     case UnaryOp_kind:
         VISIT(c, expr, e->v.UnaryOp.operand);
         if (e->v.UnaryOp.op == UAdd) {

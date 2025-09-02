@@ -758,10 +758,13 @@ conjunction[expr_ty] (memo):
 
 inversion[expr_ty] (memo):
     | 'not' a=inversion { _PyAST_UnaryOp(Not, a, EXTRA) }
-    | comparison
+    | pipe_expr
 
 # Comparison operators
 # --------------------
+pipe_expr[expr_ty]:
+    | a=pipe_expr '|>' b=comparison { _PyAST_BinOp(a, Pipe, b, EXTRA) }
+    | comparison
 
 comparison[expr_ty]:
     | a=bitwise_or b=compare_op_bitwise_or_pair+ {
